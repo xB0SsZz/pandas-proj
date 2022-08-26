@@ -1,0 +1,68 @@
+import openpyxl as xl
+
+def remove(xlsx_file):
+    path = './' + xlsx_file.strip()
+    wb = xl.load_workbook(path)
+    sheet = wb.worksheets[0]
+    sheet.delete_rows(1)
+    sheet.delete_cols(23)
+    wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
+    read_config(sheet)
+            
+
+def read_config(sheet):
+    with open("data_config_file.txt", "r") as file:
+        for line in file:
+            output_file = line.partition("|")[0]
+            col = (line.partition("|")[2].partition("|")[0])
+            arg1 = (line.partition("|")[2].partition("|")[2].partition("|")[0])
+            arg2 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
+            arg3 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
+            col = col.replace(" ", "")
+            arg1 = arg1.replace(" ", "")
+            arg2 = arg2.replace(" ", "")
+            arg3 = arg3.replace(" ", "")
+
+            print(col + arg1 + arg2 + arg3 + "+")
+
+            workb = xl.Workbook()
+            ws = workb.worksheets[0]
+            column = 0
+            for i in range(1, sheet.max_column + 1):
+                c = sheet.cell(1, i).value.replace(" ", "")
+                if c == col or c == col.strip():
+                    column = i
+                    
+            if column == 0:
+                print("No column with name " + col)
+                return
+            counter = 0
+            for j in range(2, sheet.max_row + 1):
+                c = str(sheet.cell(j, column).value).replace(" ", "")
+                if arg1 == c or arg1.strip() == c:
+                    counter += 1
+                    for k in range(1, sheet.max_column + 1):
+                        ws.cell(counter, k).value = sheet.cell(j, k).value
+
+                if arg2 == c or arg2.strip() == c:
+                    counter += 1
+                    for k in range(1, sheet.max_column + 1):
+                        ws.cell(counter, k).value = sheet.cell(j, k).value
+
+                if arg3 == c or arg3.strip() == c:
+                    counter += 1
+                    for k in range(1, sheet.max_column + 1):
+                        ws.cell(counter, k).value = sheet.cell(j, k).value
+
+            workb.save("./" + output_file)
+
+
+            
+
+
+
+def main():
+    remove('example.xlsx')
+
+if __name__ == '__main__':
+    main()
