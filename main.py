@@ -1,5 +1,6 @@
 import openpyxl as xl
 
+
 def remove(xlsx_file):
     path = './' + xlsx_file.strip()
     wb = xl.load_workbook(path)
@@ -7,10 +8,37 @@ def remove(xlsx_file):
     sheet.delete_rows(1)
     sheet.delete_cols(23)
     wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
-    read_config(sheet)
-            
+    read_config(wb)
+    wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
+    
 
-def read_config(sheet):
+def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
+    print("J: " + str(j) + "; Results: " + str(sheet.cell(j, 8).value) + "Sr no: " + str(sheet.cell(j, 1).value))
+    c = str(sheet.cell(j, column).value).replace(" ", "")
+    if arg1 == c or arg1.strip() == c:
+        counter += 1
+        for k in range(1, sheet.max_column + 1):
+            ws.cell(counter, k).value = sheet.cell(j, k).value
+        sheet.delete_rows(j)
+        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+
+    if arg2 == c or arg2.strip() == c:
+        counter += 1
+        for k in range(1, sheet.max_column + 1):
+            ws.cell(counter, k).value = sheet.cell(j, k).value
+        sheet.delete_rows(j)
+        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+
+    if arg3 == c or arg3.strip() == c:
+        counter += 1
+        for k in range(1, sheet.max_column + 1):
+            ws.cell(counter, k).value = sheet.cell(j, k).value
+        sheet.delete_rows(j)
+        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+
+
+def read_config(wb):
+    sheet = wb.worksheets[0]
     with open("data_config_file.txt", "r") as file:
         for line in file:
             output_file = line.partition("|")[0]
@@ -38,21 +66,7 @@ def read_config(sheet):
                 return
             counter = 0
             for j in range(2, sheet.max_row + 1):
-                c = str(sheet.cell(j, column).value).replace(" ", "")
-                if arg1 == c or arg1.strip() == c:
-                    counter += 1
-                    for k in range(1, sheet.max_column + 1):
-                        ws.cell(counter, k).value = sheet.cell(j, k).value
-
-                if arg2 == c or arg2.strip() == c:
-                    counter += 1
-                    for k in range(1, sheet.max_column + 1):
-                        ws.cell(counter, k).value = sheet.cell(j, k).value
-
-                if arg3 == c or arg3.strip() == c:
-                    counter += 1
-                    for k in range(1, sheet.max_column + 1):
-                        ws.cell(counter, k).value = sheet.cell(j, k).value
+                delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
 
             workb.save("./" + output_file)
 
