@@ -13,7 +13,6 @@ def remove(xlsx_file):
     
 
 def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
-    print("J: " + str(j) + "; Results: " + str(sheet.cell(j, 8).value) + "Sr no: " + str(sheet.cell(j, 1).value))
     c = str(sheet.cell(j, column).value).replace(" ", "")
     if arg1 == c or arg1.strip() == c:
         counter += 1
