@@ -57,7 +57,6 @@ def read_config(wb):
             ws = workb.worksheets[0]
             column = 0
             for i in range(1, sheet.max_column + 1):
-                #print("Value: +" + sheet.cell(1, i).value.strip() + "+")
                 c = str(sheet.cell(1, i).value).replace(" ", "")
                 if c == col or c == col.strip():
                     column = i
