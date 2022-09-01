@@ -34,6 +34,7 @@ def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
             ws.cell(counter, k).value = sheet.cell(j, k).value
         sheet.delete_rows(j)
         delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+    return counter
 
 
 def read_config(wb):
@@ -56,6 +57,7 @@ def read_config(wb):
             ws = workb.worksheets[0]
             column = 0
             for i in range(1, sheet.max_column + 1):
+                #print("Value: +" + sheet.cell(1, i).value.strip() + "+")
                 c = str(sheet.cell(1, i).value).replace(" ", "")
                 if c == col or c == col.strip():
                     column = i
@@ -63,9 +65,14 @@ def read_config(wb):
             if column == 0:
                 print("No column with name " + col)
                 return
-            counter = 0
+
+            for i in range(1, sheet.max_column + 1):
+                ws.cell(1, i).value = sheet.cell(1, i).value
+
+            counter = 1
             for j in range(2, sheet.max_row + 1):
-                delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+                counter = delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
+                print(str(counter))
 
             workb.save("./" + output_file)
 
