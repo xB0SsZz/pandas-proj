@@ -7,9 +7,12 @@ def remove(xlsx_file):
     sheet = wb.worksheets[0]
     sheet.delete_rows(1)
     sheet.delete_cols(23)
+    print("Deleted row 1 and column W of sheet: " + str(sheet))
     wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
     read_config(wb)
     wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
+    print("---------------------------------------------------")
+    print("New file saved as: " + './' + xlsx_file.partition(".")[0] + "_croped.xlsx")
     
 
 def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
@@ -39,19 +42,23 @@ def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
 
 def read_config(wb):
     sheet = wb.worksheets[0]
-    with open("data_config_file.txt", "r") as file:
-        for line in file:
+    with open("data_config_file.txt", "r") as f:
+        for line in f:
             output_file = line.partition("|")[0]
             col = (line.partition("|")[2].partition("|")[0])
             arg1 = (line.partition("|")[2].partition("|")[2].partition("|")[0])
             arg2 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
             arg3 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
+            output_file = output_file.replace(" ", "")
             col = col.replace(" ", "")
             arg1 = arg1.replace(" ", "")
             arg2 = arg2.replace(" ", "")
             arg3 = arg3.replace(" ", "")
+            arg3 = arg3.replace("\n", "")
 
-            print(col + arg1 + arg2 + arg3 + "+")
+            print("---------------------------------------------------")
+            print("Saving on file |" + output_file + "|")
+            print("Searching on column |" + col + "| for |" + arg1 + "|" + arg2 + "|" + arg3 + "|")
 
             workb = xl.Workbook()
             ws = workb.worksheets[0]
@@ -71,12 +78,11 @@ def read_config(wb):
             counter = 1
             for j in range(2, sheet.max_row + 1):
                 counter = delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
-                print(str(counter))
 
             workb.save("./" + output_file)
-
-
+            print("Save complete on |" + output_file + "|")
             
+
 
 
 
