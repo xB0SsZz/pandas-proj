@@ -1,48 +1,32 @@
-import openpyxl as xl
+import pandas as pd
+import numpy as np
+import xlsxwriter
+
+EXCEL_NAME = 'example.xlsx'
 
 
-def remove(xlsx_file):
-    path = './' + xlsx_file.strip()
-    wb = xl.load_workbook(path)
-    sheet = wb.worksheets[0]
-    sheet.delete_rows(1)
-    sheet.delete_cols(23)
-    print("Deleted row 1 and column W of sheet: " + str(sheet))
-    wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
-    read_config(wb)
-    wb.save('./' + xlsx_file.partition(".")[0] + "_croped.xlsx")
-    print("---------------------------------------------------")
-    print("New file saved as: " + './' + xlsx_file.partition(".")[0] + "_croped.xlsx")
+
+
+def main():
+    df = pd.read_excel(EXCEL_NAME)
+
+    # removing row 1:
+    df.to_excel(EXCEL_NAME.partition('.')[0] + "_croped.xlsx", index=False, header=False)
+    croped_df = pd.read_excel(EXCEL_NAME.partition('.')[0] + "_croped.xlsx")
+
+    # removing column W:
+    croped_df.drop(croped_df.columns[22], axis=1, inplace=True)
+    croped_df.to_excel(EXCEL_NAME.partition('.')[0] + "_croped.xlsx", index=False, header=True)
+    print(croped_df)
+
+    header = croped_df.columns.values.tolist()
+
+    writer_croped = pd.ExcelWriter(EXCEL_NAME.partition('.')[0] + "_croped.xlsx", engine='xlsxwriter')
     
 
-def delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter):
-    c = str(sheet.cell(j, column).value).replace(" ", "")
-    if arg1 == c or arg1.strip() == c:
-        counter += 1
-        for k in range(1, sheet.max_column + 1):
-            ws.cell(counter, k).value = sheet.cell(j, k).value
-        sheet.delete_rows(j)
-        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
-
-    if arg2 == c or arg2.strip() == c:
-        counter += 1
-        for k in range(1, sheet.max_column + 1):
-            ws.cell(counter, k).value = sheet.cell(j, k).value
-        sheet.delete_rows(j)
-        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
-
-    if arg3 == c or arg3.strip() == c:
-        counter += 1
-        for k in range(1, sheet.max_column + 1):
-            ws.cell(counter, k).value = sheet.cell(j, k).value
-        sheet.delete_rows(j)
-        delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
-    return counter
-
-
-def read_config(wb):
-    sheet = wb.worksheets[0]
-    with open("data_config_file.txt", "r") as f:
+    rows_to_delete = [-1]
+    # reading data_config_file.txt:
+    with open('data_config_file.txt', 'r') as f:
         for line in f:
             output_file = line.partition("|")[0]
             col = (line.partition("|")[2].partition("|")[0])
@@ -56,38 +40,61 @@ def read_config(wb):
             arg3 = arg3.replace(" ", "")
             arg3 = arg3.replace("\n", "")
 
+            writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
+            
             print("---------------------------------------------------")
             print("Saving on file |" + output_file + "|")
             print("Searching on column |" + col + "| for |" + arg1 + "|" + arg2 + "|" + arg3 + "|")
-
-            workb = xl.Workbook()
-            ws = workb.worksheets[0]
-            column = 0
-            for i in range(1, sheet.max_column + 1):
-                c = str(sheet.cell(1, i).value).replace(" ", "")
-                if c == col or c == col.strip():
-                    column = i
-                    
-            if column == 0:
-                print("No column with name " + col)
-                return
-
-            for i in range(1, sheet.max_column + 1):
-                ws.cell(1, i).value = sheet.cell(1, i).value
-
-            counter = 1
-            for j in range(2, sheet.max_row + 1):
-                counter = delete_rows(arg1, arg2, arg3, sheet, ws, column, j, counter)
-
-            workb.save("./" + output_file)
-            print("Save complete on |" + output_file + "|")
             
+            # dataframe to save in output_file:
+            out_df = pd.DataFrame(columns=header)
+
+            column = 0
+
+            for i in range(0, len(croped_df.columns)):
+                c = croped_df.columns[i]
+                if c.replace(" ", "") == col:
+                    column = i
+
+            if column == 0:
+                print("No column named " + col)
+                return
+            
+            for j in range(0, len(croped_df)):
+                if arg1 in str(croped_df.iloc[j][croped_df.columns[column]]):
+                    row = list()
+                    for k in range(0, len(croped_df.columns)):
+                        row.append(croped_df.iloc[j][croped_df.columns[k]])
+                    out_df.loc[len(out_df.index)] = row
+                    if j not in rows_to_delete:
+                        rows_to_delete.append(j)
+                if arg2 in str(croped_df.iloc[j][croped_df.columns[column]]):
+                    row = list()
+                    for k in range(0, len(croped_df.columns)):
+                        row.append(croped_df.iloc[j][croped_df.columns[k]])
+                    out_df.loc[len(out_df.index)] = row
+                    if j not in rows_to_delete:
+                        rows_to_delete.append(j)
+                if arg3 in str(croped_df.iloc[j][croped_df.columns[column]]):
+                    row = list()
+                    for k in range(0, len(croped_df.columns)):
+                        row.append(croped_df.iloc[j][croped_df.columns[k]])
+                    out_df.loc[len(out_df.index)] = row
+                    if j not in rows_to_delete:
+                        rows_to_delete.append(j)
+            
+            out_df.to_excel(writer, index=False, header=True)
+            writer.save()
+
+    rows_to_delete = np.sort(rows_to_delete)[::-1]
+
+    for i in range(0, len(rows_to_delete) - 1):
+        print("deleting row " + str(rows_to_delete[i]))
+        croped_df.drop(labels=rows_to_delete[i], axis=0, inplace=True)
+    croped_df.to_excel(writer_croped, index=False, header=True)
+    writer_croped.save()
 
 
-
-
-def main():
-    remove('example.xlsx')
 
 if __name__ == '__main__':
     main()
