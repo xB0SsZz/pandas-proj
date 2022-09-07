@@ -10,6 +10,8 @@ EXCEL_NAME = 'example.xlsx'
 def main():
     df = pd.read_excel(EXCEL_NAME)
 
+    output_files = list()
+
     # removing row 1:
     df.to_excel(EXCEL_NAME.partition('.')[0] + "_croped.xlsx", index=False, header=False)
     croped_df = pd.read_excel(EXCEL_NAME.partition('.')[0] + "_croped.xlsx")
@@ -34,20 +36,36 @@ def main():
             arg2 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
             arg3 = (line.partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[2].partition("|")[0])
             output_file = output_file.replace(" ", "")
+            
             col = col.replace(" ", "")
             arg1 = arg1.replace(" ", "")
             arg2 = arg2.replace(" ", "")
             arg3 = arg3.replace(" ", "")
             arg3 = arg3.replace("\n", "")
 
-            writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
+            
             
             print("---------------------------------------------------")
             print("Saving on file |" + output_file + "|")
             print("Searching on column |" + col + "| for |" + arg1 + "|" + arg2 + "|" + arg3 + "|")
             
-            # dataframe to save in output_file:
-            out_df = pd.DataFrame(columns=header)
+            if len(output_files) != 0:
+                flag = False
+                for out in output_files:
+                    if out == output_file:
+                        print(str(out) + " == " + str(output_file))
+                        out_df = pd.read_excel(output_file)
+                        flag = True
+                    else:
+                        out_df = pd.DataFrame(columns=header)
+                if not flag:
+                    output_files.append(output_file)
+                
+            else:
+                output_files.append(output_file)
+                out_df = pd.DataFrame(columns=header)
+            
+            writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
 
             column = 0
 
@@ -85,6 +103,7 @@ def main():
             
             out_df.to_excel(writer, index=False, header=True)
             writer.save()
+            
 
     rows_to_delete = np.sort(rows_to_delete)[::-1]
 
