@@ -55,15 +55,16 @@ def main():
                     if out == output_file:
                         print(str(out) + " == " + str(output_file))
                         out_df = pd.read_excel(output_file)
+                        print("INDEX BEFORE: " + str(len(out_df.index)))
                         flag = True
-                    else:
-                        out_df = pd.DataFrame(columns=header)
                 if not flag:
                     output_files.append(output_file)
-                
+                    
+            
             else:
                 output_files.append(output_file)
                 out_df = pd.DataFrame(columns=header)
+                
             
             writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
 
@@ -73,16 +74,15 @@ def main():
                 c = croped_df.columns[i]
                 if c.replace(" ", "") == col:
                     column = i
-
             if column == 0:
                 print("No column named " + col)
                 return
-            
             for j in range(0, len(croped_df)):
                 if arg1 in str(croped_df.iloc[j][croped_df.columns[column]]):
                     row = list()
                     for k in range(0, len(croped_df.columns)):
                         row.append(croped_df.iloc[j][croped_df.columns[k]])
+                    print("INDEX: " + str(len(out_df.index)))
                     out_df.loc[len(out_df.index)] = row
                     if j not in rows_to_delete:
                         rows_to_delete.append(j)
