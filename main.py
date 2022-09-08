@@ -1,13 +1,18 @@
 import pandas as pd
 import numpy as np
 import xlsxwriter
+import os
+import sys
 
 EXCEL_NAME = 'example.xlsx'
 
 
 
-
 def main():
+
+    if not os.path.exists(EXCEL_NAME):
+        sys.exit(f'The excel file {EXCEL_NAME} doesnt exist')
+
     df = pd.read_excel(EXCEL_NAME)
 
     output_files = list()
@@ -49,23 +54,12 @@ def main():
             print("Saving on file |" + output_file + "|")
             print("Searching on column |" + col + "| for |" + arg1 + "|" + arg2 + "|" + arg3 + "|")
             
-            if len(output_files) != 0:
-                flag = False
-                for out in output_files:
-                    if out == output_file:
-                        print(str(out) + " == " + str(output_file))
-                        out_df = pd.read_excel(output_file)
-                        print("INDEX BEFORE: " + str(len(out_df.index)))
-                        flag = True
-                if not flag:
-                    output_files.append(output_file)
-                    
             
+            if os.path.exists(output_file):
+                out_df = pd.read_excel(output_file)
             else:
-                output_files.append(output_file)
                 out_df = pd.DataFrame(columns=header)
-                
-            
+
             writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
 
             column = 0
@@ -82,7 +76,6 @@ def main():
                     row = list()
                     for k in range(0, len(croped_df.columns)):
                         row.append(croped_df.iloc[j][croped_df.columns[k]])
-                    print("INDEX: " + str(len(out_df.index)))
                     out_df.loc[len(out_df.index)] = row
                     if j not in rows_to_delete:
                         rows_to_delete.append(j)
